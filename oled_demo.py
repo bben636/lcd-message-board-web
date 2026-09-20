@@ -1,7 +1,7 @@
 import time
 
 from app.display import OledDisplay
-from app.renderer import render_text_to_image
+from app.renderer import render_text
 
 
 def main():
@@ -9,14 +9,17 @@ def main():
     display = OledDisplay()
 
     try:
-        text = "Benjamin RUST"
+        text = "čćžšđ ČĆŽŠĐ 123456789" * 8
 
         for count in range(len(text) + 1):
-            image = render_text_to_image(text[:count])
-            display.show_image(image)
-            time.sleep(0.2)
+            image = render_text(text[:count])
+            display.show(image)
+            time.sleep(0.1)
 
-        print("Test je poslan. Provjeri prikazuje li OLED 'Benjamin RUST Behrem'.")
+        time.sleep(2)
+        display.show(render_text("Kratko."))
+        time.sleep(3)
+
     finally:
         display.close()
 

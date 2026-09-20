@@ -1,14 +1,62 @@
+import string
+from unicodedata import normalize
+
 from PIL import Image, ImageDraw, ImageFont
+
 
 WIDTH = 128
 HEIGHT = 64
 
-FONT = ImageFont.load_default()
+CELL_WIDTH = 6
+CELL_HEIGHT = 8
 
-def render_text_to_image(text: str) -> Image:
+COLUMNS = WIDTH // CELL_WIDTH
+ROWS = HEIGHT // CELL_HEIGHT
+MAX_CHARS = COLUMNS * ROWS
+
+BASELINE = 6
+
+FONT = ImageFont.truetype(
+    "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+    7,
+)
+
+SUPPORTED = set(
+    string.ascii_letters
+    + string.digits
+    + string.punctuation
+    + " čćžšđČĆŽŠĐ"
+)
+
+
+def render_text(text: str) -> Image.Image:
+    text = normalize("NFC", text)
+
+    if len(text) > MAX_CHARS:
+        raise ValueError(
+            f"Poruka smije imati najvise {MAX_CHARS} znakova."
+        )
+
+    for char in text:
+        if char not in SUPPORTED:
+            raise ValueError(f"Nepodrzan znak: {char!r}")
+
     image = Image.new("1", (WIDTH, HEIGHT), 0)
     draw = ImageDraw.Draw(image)
 
-    draw.text((0, 0), text, font=FONT, fill=1)
+    for index, char in enumerate(text):
+        column = index % COLUMNS
+        row = index // COLUMNS
+
+        x = column * CELL_WIDTH
+        y = row * CELL_HEIGHT + BASELINE
+
+        draw.text(
+            (x, y),
+            char,
+            font=FONT,
+            fill=1,
+            anchor="ls",
+        )
 
     return image

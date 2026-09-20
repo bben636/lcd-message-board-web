@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="bs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OLED poruka</title>
+
+    <style>
+        body {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 0 20px;
+            font-family: system-ui, sans-serif;
+            line-height: 1.5;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            margin-top: 8px;
+            padding: 12px;
+            font: inherit;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>My msg on the OLED</h1>
+
+        <label for="message">message: </label>
+
+        <!-- limiting msg on the browser -->
+        <input
+            id="message"
+            type="text"
+            maxlength="168"
+            autocomplete="off"
+            aria-describedby="limit status"
+            placeholder="Počni pisati..."
+        >
+
+        <p id="limit">max 168 characters.</p>
+        <p id="status">input not yet connected to OLED display.</p>
+    </main>
+</body>
+</html>
