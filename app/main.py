@@ -14,3 +14,13 @@ def index():
         WEB_DIR / "index.html",
         media_type="text/html",
     )
+    
+@app.get("/app.js", response_class=FileResponse)
+def app_js():
+    """Serve the app.js file from the web directory."""
+    return FileResponse(
+        WEB_DIR / "app.js",
+        media_type="application/javascript",
+    )
+    
+    

@@ -18,12 +18,12 @@ class OledDisplay:
         self._oled.image(image)
         self._oled.show()
 
-        def close(self) -> None:
-        """Obrisi ekran i oslobodi I2C vezu."""
+    def close(self) -> None:
+        """clean display and free resources."""
         try:
             self._oled.fill(0)
             self._oled.show()
         finally:
-            # Izvrsava se i ako brisanje ekrana prijavi gresku.
+            # executes if the display was initialized or not, to ensure resources are freed
             self._i2c.deinit()
             
