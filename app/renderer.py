@@ -1,8 +1,7 @@
 import string
+
 from unicodedata import normalize
-
 from PIL import Image, ImageDraw, ImageFont
-
 
 WIDTH = 128
 HEIGHT = 64
@@ -34,12 +33,12 @@ def render_text(text: str) -> Image.Image:
 
     if len(text) > MAX_CHARS:
         raise ValueError(
-            f"Poruka smije imati najvise {MAX_CHARS} znakova."
+            f"Message can have max: {MAX_CHARS} characters."
         )
 
     for char in text:
         if char not in SUPPORTED:
-            raise ValueError(f"Nepodrzan znak: {char!r}")
+            raise ValueError(f"Unsupported character: {char!r}")
 
     image = Image.new("1", (WIDTH, HEIGHT), 0)
     draw = ImageDraw.Draw(image)
