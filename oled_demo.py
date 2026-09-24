@@ -1,28 +1,23 @@
-import time
-
 from app.display import OledDisplay
-from app.renderer import render_text
+from app.display_service import DisplayService
 
-
-def main():
-    # Standardni I2C1 pinovi na Raspberry Pi 4.
+def main() -> None:
+    # connect to the OLED Hardware
     display = OledDisplay()
-
+    
     try:
-        text = "čćžšđ ČĆŽŠĐ 123456789" * 8
-
-        for count in range(len(text) + 1):
-            image = render_text(text[:count])
-            display.show(image)
-            time.sleep(0.1)
-
-        time.sleep(2)
-        display.show(render_text("Kratko."))
-        time.sleep(3)
-
+        # giving display to the service
+        service = DisplayService(display)
+        
+        # service will call render_text to render the text and then display it on the OLED
+        service.show_text("Service active !!!")
+        
+        input("Press Enter to exit...")
     finally:
         display.close()
-
+    
 
 if __name__ == "__main__":
-    main()
+    main()  
+    
+        
