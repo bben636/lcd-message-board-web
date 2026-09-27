@@ -1,52 +1,56 @@
 const messageInput = document.getElementById("message");
 const status = document.getElementById("status");
 
+// Clear the browser input and wait for the server's ready message.
+messageInput.value = "";
+messageInput.disabled = true;
+status.textContent = "Connecting...";
+
 const protocol = location.protocol === "https:" ? "wss" : "ws";
 const socket = new WebSocket(`${protocol}://${location.host}/ws`);
 
 let sequence = 0;
 
-//every new opening clears the text
-
-input value = "";
-input.disabled = true;
-
 socket.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
 
     if (data.type === "ready") {
-        input.disabled = false;
-        status.textContent = "input connected to OLED display.";
-        input.focus();
+        messageInput.disabled = false;
+        status.textContent = "Connected to server.";
+        messageInput.focus();
     } else if (data.type === "ack") {
-        recieved.textContent = data.text;
-        status.textContent =  `Python recieved #${data.seq} (${data.length}/168).`;
+        status.textContent =
+            `Python received #${data.seq} (${data.length}/168).`;
     } else if (data.type === "error") {
-        status.textContent = `Error: Not recieved ${data.message}`;
+        status.textContent = `Error: ${data.message}`;
     }
 });
 
-input.addEventListener("input", () => {
+// Send the current text after every user edit, including deletion and paste.
+messageInput.addEventListener("input", () => {
     if (socket.readyState !== WebSocket.OPEN) {
-        input.disabled = true;
-        status.textContent = "Change did not go through. Refresh the page and try again.";
+        messageInput.disabled = true;
+        status.textContent =
+            "Change was not sent. Refresh the page and try again.";
         return;
     }
+
     sequence++;
 
     socket.send(JSON.stringify({
         seq: sequence,
-        text: input.normalize("NFC"),
+        text: messageInput.value.normalize("NFC"),
     }));
 });
 
-socket addEventListener("close", () => {
-    input.disabled = true;
-    status.textContent = "Connection closed. Refresh the page and try again.";
-});  
+socket.addEventListener("close", () => {
+    messageInput.disabled = true;
+    status.textContent =
+        "Connection closed. Refresh the page and try again.";
+});
 
 socket.addEventListener("error", () => {
-    input.disabled = true;
-    status.textContent = "Connection error. Refresh the page and try again.";
-}); 
-
+    messageInput.disabled = true;
+    status.textContent =
+        "Connection error. Refresh the page and try again.";
+});
