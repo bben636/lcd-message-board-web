@@ -54,3 +54,4 @@ socket.addEventListener("error", () => {
     status.textContent =
         "Connection error. Refresh the page and try again.";
 });
+
