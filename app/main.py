@@ -1,10 +1,12 @@
 import asyncio
 from pathlib import Path
+from json import JSONDecodeError
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from app.display import OledDisplay
 from app.display_service import DisplayService
+from app.message_validation import parse_text_update
 
 
 
@@ -64,16 +66,26 @@ async def websocket_endpoint(websocket: WebSocket):
             await asyncio.to_thread(service.show_text, "")
 
         await websocket.send_json({"type": "ready"})
-
+        
         while True:
-            data = await websocket.receive_json()
-            text = data["text"]
-            sequence = data["seq"]
-
             try:
-                # Allow one display update at a time.
+                # Decode the incoming JSON message.
+                data = await websocket.receive_json()
+
+                # Validate its structure and extract the values.
+                sequence, text = parse_text_update(data)
+
+                # Update the display only after validation succeeds.
                 async with display_lock:
                     await asyncio.to_thread(service.show_text, text)
+
+            except JSONDecodeError:
+                await websocket.send_json({
+                    "type": "error",
+                    "message": "Message must contain valid JSON.",
+                })
+                continue
+
             except ValueError as exc:
                 await websocket.send_json({
                     "type": "error",
@@ -88,5 +100,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 "text": text,
                 "length": len(text),
             })
+        
+        
     except WebSocketDisconnect:
         print("Client disconnected.")

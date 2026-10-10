@@ -20,7 +20,7 @@ socket.addEventListener("message", (event) => {
         messageInput.focus();
     } else if (data.type === "ack") {
         status.textContent =
-            `Python received #${data.seq} (${data.length}/168).`;
+            `Display received #${data.seq} (${data.length}/168).`;
     } else if (data.type === "error") {
         status.textContent = `Error: ${data.message}`;
     }
