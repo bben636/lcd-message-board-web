@@ -1,10 +1,15 @@
 const messageInput = document.getElementById("message");
 const status = document.getElementById("status");
 
+const setStatus = (message, state = "") => {
+    status.textContent = message;
+    status.className = `status ${state}`.trim();
+};
+
 // Clear the browser input and wait for the server's ready message.
 messageInput.value = "";
 messageInput.disabled = true;
-status.textContent = "Connecting...";
+setStatus("Connecting...", "connecting");
 
 const protocol = location.protocol === "https:" ? "wss" : "ws";
 const socket = new WebSocket(`${protocol}://${location.host}/ws`);
@@ -16,13 +21,12 @@ socket.addEventListener("message", (event) => {
 
     if (data.type === "ready") {
         messageInput.disabled = false;
-        status.textContent = "Connected to server.";
+        setStatus("Connected to server.", "connected");
         messageInput.focus();
     } else if (data.type === "ack") {
-        status.textContent =
-            `Display received #${data.seq} (${data.length}/168).`;
+        setStatus(`Display received #${data.seq} (${data.length}/168).`, "connected");
     } else if (data.type === "error") {
-        status.textContent = `Error: ${data.message}`;
+        setStatus(`Error: ${data.message}`, "error");
     }
 });
 
@@ -30,8 +34,7 @@ socket.addEventListener("message", (event) => {
 messageInput.addEventListener("input", () => {
     if (socket.readyState !== WebSocket.OPEN) {
         messageInput.disabled = true;
-        status.textContent =
-            "Change was not sent. Refresh the page and try again.";
+        setStatus("Change was not sent. Refresh the page and try again.", "error");
         return;
     }
 
@@ -45,13 +48,11 @@ messageInput.addEventListener("input", () => {
 
 socket.addEventListener("close", () => {
     messageInput.disabled = true;
-    status.textContent =
-        "Connection closed. Refresh the page and try again.";
+    setStatus("Connection closed. Refresh the page and try again.", "error");
 });
 
 socket.addEventListener("error", () => {
     messageInput.disabled = true;
-    status.textContent =
-        "Connection error. Refresh the page and try again.";
+    setStatus("Connection error. Refresh the page and try again.", "error");
 });
 

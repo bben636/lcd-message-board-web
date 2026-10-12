@@ -7,41 +7,151 @@
     <script src="/app.js" defer></script>
 
     <style>
+        :root {
+            --bg: #0f172a;
+            --bg-soft: #111827;
+            --panel: rgba(15, 23, 42, 0.72);
+            --panel-border: rgba(148, 163, 184, 0.18);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #7c3aed;
+            --accent-strong: #8b5cf6;
+            --accent-soft: rgba(124, 58, 237, 0.18);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --shadow: rgba(15, 23, 42, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            max-width: 600px;
-            margin: 60px auto;
-            padding: 0 20px;
-            font-family: system-ui, sans-serif;
-            line-height: 1.5;
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(124, 58, 237, 0.35), transparent 38%),
+                linear-gradient(135deg, var(--bg), var(--bg-soft));
+            color: var(--text);
+        }
+
+        main {
+            width: min(100%, 520px);
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 22px;
+            box-shadow: 0 20px 50px var(--shadow);
+            backdrop-filter: blur(8px);
+            padding: 30px 28px 24px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            font-size: 0.74rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+
+        h1 {
+            margin: 0 0 22px;
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            line-height: 1.1;
+        }
+
+        label {
+            display: inline-block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: var(--muted);
         }
 
         input {
-            box-sizing: border-box;
             width: 100%;
-            margin-top: 8px;
-            padding: 12px;
+            margin: 0;
+            padding: 15px 16px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text);
             font: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        input:focus {
+            border-color: rgba(139, 92, 246, 0.9);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.18);
+            transform: translateY(-1px);
+        }
+
+        input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #limit {
+            margin: 12px 2px 18px;
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+
+        .status {
+            margin: 0;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text);
+            font-size: 0.95rem;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+        }
+
+        .status.connecting {
+            border-color: rgba(251, 191, 36, 0.35);
+            background: rgba(251, 191, 36, 0.1);
+            color: #fef3c7;
+        }
+
+        .status.connected {
+            border-color: rgba(52, 211, 153, 0.35);
+            background: rgba(52, 211, 153, 0.1);
+            color: #d1fae5;
+        }
+
+        .status.error {
+            border-color: rgba(248, 113, 113, 0.38);
+            background: rgba(248, 113, 113, 0.08);
+            color: #fecaca;
         }
     </style>
 </head>
 <body>
     <main>
-        <h1>My msg on the OLED</h1>
+        <p class="eyebrow">OLED control</p>
+        <h1>My message on the OLED</h1>
 
-        <label for="message">message: </label>
+        <label for="message">Message</label>
 
-        <!-- limiting msg on the browser -->
         <input
             id="message"
             type="text"
             maxlength="168"
             autocomplete="off"
             aria-describedby="limit status"
-            placeholder="Počni pisati..."
+            placeholder="Type your message..."
         >
 
-        <p id="limit">max 168 characters.</p>
-        <p id="status">input not yet connected to OLED display.</p>
+        <p id="limit">Max 168 characters</p>
+        <p id="status" class="status" aria-live="polite">Input not connected to the OLED display yet.</p>
     </main>
 </body>
 </html>
