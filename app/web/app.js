@@ -46,9 +46,13 @@ messageInput.addEventListener("input", () => {
     }));
 });
 
-socket.addEventListener("close", () => {
+socket.addEventListener("close", (event) => {
     messageInput.disabled = true;
-    setStatus("Connection closed. Refresh the page and try again.", "error");
+    if (event.code === 4001) {
+        setStatus("Another tab took control of the display.", "error");
+    } else {
+        setStatus("Connection closed. Refresh the page and try again.", "error");
+    }
 });
 
 socket.addEventListener("error", () => {

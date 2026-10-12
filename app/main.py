@@ -22,6 +22,8 @@ async def lifespan(app: FastAPI):
         service = DisplayService(display)
         app.state.display_service = service
         app.state.display_lock = asyncio.Lock()
+        app.state.client_lock = asyncio.Lock()
+        app.state.active_websocket = None
         
         service.show_text("")
         print("Display initialized.")
@@ -56,16 +58,37 @@ def app_js():
 async def websocket_endpoint(websocket: WebSocket):
     service = websocket.app.state.display_service
     display_lock = websocket.app.state.display_lock
+    client_lock = websocket.app.state.client_lock
 
-    # Accept the connection before exchanging messages.
     await websocket.accept()
 
+    async def send_if_active(message):
+        async with client_lock:
+            if websocket.app.state.active_websocket is not websocket:
+                return False
+            await websocket.send_json(message)
+            return True
+
+    async with client_lock:
+        previous_websocket = websocket.app.state.active_websocket
+        websocket.app.state.active_websocket = websocket
+        if previous_websocket is not None:
+            try:
+                await previous_websocket.close(
+                    code=4001,
+                    reason="Display control was taken over by another client.",
+                )
+            except RuntimeError:
+                pass
+
     try:
-        # Clear the display before enabling the browser input.
         async with display_lock:
+            if websocket.app.state.active_websocket is not websocket:
+                return
             await asyncio.to_thread(service.show_text, "")
 
-        await websocket.send_json({"type": "ready"})
+        if not await send_if_active({"type": "ready"}):
+            return
         
         while True:
             try:
@@ -77,30 +100,37 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Update the display only after validation succeeds.
                 async with display_lock:
+                    if websocket.app.state.active_websocket is not websocket:
+                        return
                     await asyncio.to_thread(service.show_text, text)
 
             except JSONDecodeError:
-                await websocket.send_json({
+                if not await send_if_active({
                     "type": "error",
                     "message": "Message must contain valid JSON.",
-                })
+                }):
+                    return
                 continue
 
             except ValueError as exc:
-                await websocket.send_json({
+                if not await send_if_active({
                     "type": "error",
                     "message": str(exc),
-                })
+                }):
+                    return
                 continue
 
             # Confirm only after the display update finishes.
-            await websocket.send_json({
+            if not await send_if_active({
                 "type": "ack",
                 "seq": sequence,
                 "text": text,
                 "length": len(text),
-            })
-        
-        
+            }):
+                return
     except WebSocketDisconnect:
         print("Client disconnected.")
+    finally:
+        async with client_lock:
+            if websocket.app.state.active_websocket is websocket:
+                websocket.app.state.active_websocket = None
