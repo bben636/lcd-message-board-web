@@ -5,3 +5,4 @@ Pillow
 adafruit-blinka
 adafruit-circuitpython-ssd1306
 RPi.GPIO
+opencv-python-headless==5.0.0
